@@ -1,0 +1,16 @@
+{
+  "name": "manage_annual_leave",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node src/server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.0",
+    "pg": "^8.7.3"
+  },
+  "type": "module"
+}
