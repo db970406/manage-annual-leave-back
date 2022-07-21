@@ -107,6 +107,36 @@ export const getSearchEmployeeData = async (req, res) => {
 export const deleteEmployeeData = async (req, res) => {
     try {
         const { id } = req.params;
+        const employeeIdArray = [
+            193583,
+            397956,
+            639134,
+            963012,
+            863932,
+            348432,
+            120538,
+            585420,
+            721093,
+            492139,
+            391240,
+            218531,
+            249483,
+            542381,
+            686492,
+            492813,
+            102491,
+            929103,
+            927032,
+            458261,
+            591826,
+            957123,
+            881923,
+            792341,
+            891274,
+            227835,
+        ]
+        const canDelete = employeeIdArray.find(employeeId => employeeId === +id);
+        if (canDelete) throw new Error("");
         await client.query(`
             DELETE  FROM employee 
             WHERE   id=${id}
