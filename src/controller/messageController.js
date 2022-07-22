@@ -1,5 +1,6 @@
 import { client } from '../client.js';
 
+const HR_MANAGER_ID = 891274;
 export const createMessage = async (req, res) => {
     try {
         const { employeeId, receivedMessage, managerId } = req.body;
@@ -40,10 +41,10 @@ export const getRooms = async (req, res) => {
                 employee.id as employee_id,
                 employee.employee_name,
                 (
-                    SELECT  COUNT(CASE WHEN read='f' THEN 1 END)
+                    SELECT  CAST(COUNT(CASE WHEN read='f' THEN 1 END) AS INTEGER)
                     FROM    message
                     WHERE   room.id = room_id
-                            AND employee.id != ${287}
+                            AND employee_id != 891274
                 ) as unreadcount
         FROM    room
         INNER   JOIN employee
@@ -85,20 +86,20 @@ export const getRoom = async (req, res) => {
 }
 
 export const getRoomInfo = async (req, res) => {
-    const { employeeId } = req.params;
     try {
+        const { employeeId } = req.params;
 
-        if (+employeeId === 287) {
+        if (+employeeId === HR_MANAGER_ID) {
             const { rows: roomId } = await client.query(`
-            SELECT  id as room_id
-            FROM    room
-            WHERE   hr_manager_id=${employeeId}
-        `);
+                SELECT  id as room_id
+                FROM    room
+                WHERE   hr_manager_id=${employeeId}
+            `);
             const { rows: roomData } = await client.query(`
-            SELECT  COUNT(CASE WHEN read='f' THEN 1 END) as unreadcount
-            FROM    message
-            WHERE   employee_id != ${employeeId}
-        `);
+                SELECT  COUNT(CASE WHEN read='f' THEN 1 END) as unreadcount
+                FROM    message
+                WHERE   employee_id != ${employeeId}
+            `);
 
             const roomsIdArray = roomId.map(room => room.room_id)
             return res.status(200).json({
@@ -109,34 +110,33 @@ export const getRoomInfo = async (req, res) => {
             });
         } else {
             const { rows: checkExistRoom } = await client.query(`
-            SELECT  id as room_id,
-                    sender_id as employee_id
-            FROM    room
-            WHERE   sender_id=${employeeId}
-        `);
+                SELECT  id as room_id,
+                        sender_id as employee_id
+                FROM    room
+                WHERE   sender_id=${employeeId}
+            `);
             if (checkExistRoom.length === 0) {
                 await client.query(`
-                INSERT  INTO room (
-                    sender_id
-                )
-                VALUES  (
-                    ${employeeId}
-                )
-                RETURNING   id as room_id,
-                            sender_id as employee_id
-            `);
+                    INSERT INTO room (
+                        sender_id
+                    )
+                    VALUES  (
+                        ${employeeId}
+                    )
+                `);
             }
             const { rows: roomId } = await client.query(`
-            SELECT  id as room_id
-            FROM    room
-            WHERE   sender_id=${employeeId}
-        `);
+                SELECT  id as room_id
+                FROM    room
+                WHERE   sender_id=${employeeId}
+            `);
+
             const { rows: roomData } = await client.query(`
-            SELECT  COUNT(CASE WHEN read='f' THEN 1 END) as unreadcount
-            FROM    message
-            WHERE   room_id = ${roomId[0].room_id}
-                    AND employee_id != ${employeeId}
-        `);
+                SELECT  COUNT(CASE WHEN read='f' THEN 1 END) as unreadcount
+                FROM    message
+                WHERE   room_id = ${roomId[0].room_id}
+                        AND employee_id != ${employeeId}
+            `);
             return res.status(200).json({
                 roomData: {
                     unreadcount: roomData[0].unreadcount,
@@ -158,7 +158,7 @@ export const updateRead = async (req, res) => {
                 AND employee_id != ${employeeId}
     `);
 
-    if (+employeeId === 287) {
+    if (+employeeId === HR_MANAGER_ID) {
         const { rows: getUnReadCount } = await client.query(`
             SELECT  COUNT(CASE WHEN read='f' THEN 1 END) as unreadcount
             FROM    message
